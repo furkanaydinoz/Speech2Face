@@ -3,20 +3,23 @@ import numpy as np
 import pandas as pd
 import pickle
 import os
+top_pred_for = [1,5,10,25,50,75,100]
+top_n_pred = np.array([0,0,0,0,0,0,0])
+
 class DataLoading:
 	def __init__(self):
 		self.train_csv = "preprocess/avspeech_train.csv"
 
 	@staticmethod
-	def load_ids(from_id, to_id, split='train'):
+	def load_ids(from_id, to_id, split='data'):
 		train_csv = "preprocess/avspeech_train.csv"
 		print("Loading IDs ............")
 		data = pd.read_csv(train_csv, header = None, names = ["id", "start", "end", "x", "y"])
 		ids = set([])
 		for i in range(from_id, to_id + 1):
-			if (not os.path.isfile('preprocess/' + split + '/spectrograms/' + data.loc[i, "id"] + ".pkl")):
+			if (not os.path.isfile('preprocess/' + split + '/audio_spectrograms/' + data.loc[i, "id"] + ".pkl")):
 				continue
-			elif (not os.path.isfile('preprocess/' + split + '/embeddings/' + data.loc[i, "id"] + ".pkl")):
+			elif (not os.path.isfile('preprocess/' + split + '/speaker_video_embeddings/' + data.loc[i, "id"] + ".pkl")):
 				continue
 			else:
 				ids.add(data.loc[i, "id"])
@@ -34,29 +37,29 @@ class DataLoading:
 		return train_split, valid_split, test_split
 
 	@staticmethod
-	def load_data(_ids, split='train'):
+	def load_data(_ids, split='data'):
 		x_data = np.zeros((len(_ids), 598, 257, 2))
 		y_data = np.zeros((len(_ids), 4096))
 		for i in range(len(_ids)):
-			with open('preprocess/' + split + '/spectrograms/' +  _ids[i] + ".pkl", 'rb') as f:
+			with open('preprocess/' + split + '/audio_spectrograms/' +  _ids[i] + ".pkl", 'rb') as f:
 				x_data[i] = pickle.load(f)
-			with open('preprocess/' + split + '/embeddings/' + _ids[i] + ".pkl", 'rb') as f:
+			with open('preprocess/' + split + '/speaker_video_embeddings/' + _ids[i] + ".pkl", 'rb') as f:
 				y_data[i] = pickle.load(f)
 		return x_data,y_data
 
 	@staticmethod
-	def load_Y_data(_ids, split='train'):
+	def load_Y_data(_ids, split='data'):
 		y_data = np.zeros((len(_ids), 4096))
 		for i in range(len(_ids)):
-			with open('preprocess/' + split + '/embeddings/' + _ids[i] + ".pkl", 'rb') as f:
+			with open('preprocess/' + split + '/speaker_video_embeddings/' + _ids[i] + ".pkl", 'rb') as f:
 				y_data[i] = pickle.load(f)
 		return y_data
 
 	@staticmethod
-	def load_X_data(_ids, split='train'):
+	def load_X_data(_ids, split='data'):
 		x_data = np.zeros((len(_ids), 598, 257, 2))
 		for i in range(len(_ids)):
-			with open('preprocess/' + split + '/spectrograms/' +  _ids[i] + ".pkl", 'rb') as f:
+			with open('preprocess/' + split + '/audio_spectrograms/' +  _ids[i] + ".pkl", 'rb') as f:
 				x_data[i] = pickle.load(f)
 		return x_data
 
@@ -223,7 +226,7 @@ class AudioEmbeddingModel:
 				print("not in top100",test_ids[i],get_top_k_prediction[0:5])
 
 
-		print("\ntop",top_pred_for,":",top_n_pred,"for ",len(test_ids),test_str+" IDs and ",len(speaker_video_embeddings),"Embeddings")
+		print("\ntop",top_pred_for,":",top_n_pred,"for ",len(test_ids),test_str+" IDs and ",len(speaker_video_embeddings),"embeddings")
 		return top_n_pred
 
 
@@ -235,6 +238,7 @@ class AudioEmbeddingModel:
 		return a1,a2
 
 	def get_L1_L2_loss(self,test_ids,batchsize,test_str=' test', num_samples = 100):
+    
 		ids_helper = np.array(test_ids)
 		Total_loss1,Total_loss2=0,0
 		for i in range(int(np.ceil(len(ids_helper)/num_samples))):
@@ -244,12 +248,9 @@ class AudioEmbeddingModel:
 			Total_loss1+=a
 			Total_loss2+=b
 		print("Total_loss1,2:",Total_loss1/(len(test_ids)),Total_loss1/(len(test_ids)))
-		print("\ntop",top_pred_for,":",top_n_pred,"for ",len(test_ids),test_str+" IDs and ",len(speaker_video_embeddings),"Embeddings")
+		print("\ntop",top_pred_for,":",top_n_pred,"for ",len(test_ids),test_str+" IDs and ",len(speaker_video_embeddings),"embeddings")
 		return Total_loss1,Total_loss2
 
 
 	def load_weights(self, path):
 		self.model.load_weights(path, by_name=True)
-
-
-
