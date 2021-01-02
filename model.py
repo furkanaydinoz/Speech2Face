@@ -65,6 +65,9 @@ class AudioEmbeddingModel:
 	def __init__(self, from_id, to_id,audio_shape = (598,257,2)):
 		self.from_id = from_id
 		self.to_id = to_id
+		self.top_pred_for = None
+		self.top_n_pred = None
+		self.speaker_video_embeddings = None
 		def build_model(audio_shape):
 			ip = tf.keras.layers.Input(shape = audio_shape)
 
