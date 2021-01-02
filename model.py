@@ -3,9 +3,6 @@ import numpy as np
 import pandas as pd
 import pickle
 import os
-top_pred_for = [1,5,10,25,50,75,100]
-top_n_pred = np.array([0,0,0,0,0,0,0])
-
 class DataLoading:
 	def __init__(self):
 		self.train_csv = "preprocess/avspeech_train.csv"
@@ -196,9 +193,11 @@ class AudioEmbeddingModel:
 
 	def Test_accuracy(self,test_ids,speaker_ids,batchsize,test_str=' test'):
 		ids_helper = np.array(test_ids)
+		global speaker_video_embeddings
 		speaker_video_embeddings = DataLoading.load_Y_data(speaker_ids)
 		speaker_video_embeddings=speaker_video_embeddings/np.linalg.norm(speaker_video_embeddings,axis=1,keepdims=True)
-
+		global top_pred_for
+		global top_n_pred
 		top_pred_for = [1,5,10,25,50,75,100]
 		top_n_pred = np.array([0,0,0,0,0,0,0])
 		for i in range(len(test_ids)):
