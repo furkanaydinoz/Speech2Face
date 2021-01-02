@@ -84,7 +84,11 @@ class VideoExtract():
                         print("-----No face detected in {} frame {}-----".format(id, j))
                     return 1
                     
-                top, right, bottom, left = np.squeeze(face_boxes)
+                print(face_boxes)
+                top = face_boxes[0][0]
+                top = face_boxes[0][1]
+                top = face_boxes[0][2]
+                top = face_boxes[0][3]
                 frame_cropped = frame.crop(box = (left, top, right, bottom))
 
                 frame_resized = scipy.misc.imresize(np.array(frame_cropped), size = (224,224))
